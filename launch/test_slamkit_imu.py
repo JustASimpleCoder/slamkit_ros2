@@ -56,8 +56,8 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='slamkit_ros2',
-            executable='slamkit_node',
-            name='slamkit_node',
+            executable='slamkitNode',
+            name='slamkitNode',
             output='screen',
             parameters=[{
                 'channel_type':            'usb',
@@ -81,8 +81,8 @@ def generate_launch_description():
         ),
         Node(
             package='slamkit_ros2',
-            executable='slamkit_node_client',
-            name='slamkit_node_client',
+            executable='slamkitNodeClient',
+            name='slamkitNodeClient',
             output='screen',
         ),
         Node(
