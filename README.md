@@ -1,83 +1,91 @@
 # SLIMKIT ROS package
 
-ROS2 node and test application for slamkit, this is forked from slamtec toolboocx to work with ros2
+ROS2 node and test application for slamkit, this is forked from slamtec toolboocx to work with ros2 humble. 
 
 ## Dependency
 
 This project need the following dependency:
 
 1. libusb-1.0-0-dev
-   sudo apt-get install libusb-1.0-0-dev
+    ```bash
+      sudo apt-get install libusb-1.0-0-dev
+    ```
 2. imu-tools
-   sudo apt-get install ros-\<dist\>-imu-tools
-   \<dist> is the distrbution, such as "noetic" or "melodic", and not include "<>"
-
+   ```bash
+    sudo apt-get install ros-\<dist\>-imu-tools
+    \<dist> is the distrbution, such as "humble" (tested only on humble as of February 23rd 2026)
+   ```
 ## How to build slamkit ros package
 
-1. make sure your system have installed ROS
-   If you don't familar with ROS, please visit <https://wiki.ros.org> firstly, and follow the "Getting Started" and "Tutorials".
-2. Clone or copy this project to your catkin's workspace src folder
-   . If not catkin's workspace or src folder, please create them first, such as the following shell command.
-
+1. Make sure your system have installed ROS
+   If you don't familar with ROS, please visit <https://docs.ros.org/en/humble/index.html> firstly, and follow the "Installation" and "Tutorials".
+2. Create a workspace for this projectand move to the src/ directory, if you already have one skip to step 3
+    ```bash
+    mkdir -p ~/slamkit_ws/src
+    cd ~/slamkit_ws/src
+    ```
+3. Clone or copy this project to your ROS2 workspace src folder and init the submodule for the slamware sdk
    ```bash
-   mkdir slamkit_ws
-   cd slamkit_ws
-   mkdir src
-   cd src
-   git clone <slamkit_ros repo>
-   cd <slamkit_ros>
+   git clone <slamkit_ros2 repo>
+   cd slamkit_ros2
    git submodule update --init
    ```
 
-3. Go to the catkin's workspace and running catkin_make to build slamkitNode and slamkitNodeClient
+3. Go to the slamkit workspace and run colcon_build to build slamkitNode and slamkitNodeClient
    
    ```bash
-   cd slamkit_ws
-   catkin_make
-   source devel/setup.bash
+   cd ~/slamkit_ws
+   colcon_build
+   source install/setup.bash
    ```
 
 ## How to run slamkit ros package
 
 1. Please plug in the SLAMKIT device, and use lsusb cmd to check the device is detected
 
+    ```bash
+    lsusb
+    ```
+    Expected output:
+    ```bash
+      // other USB devices 
+      BUS 00 ....  etc.
+      
+      // slamkit device
+      Bus 003 Device 011: ID fccf:f100 SLAMTEC SLAMWARELC
+    ```
+    
+
+2. Run the shell script to add udev rule, the script is in the scripts/ folder, change permissions on the file and run as sudo
+
    ```bash
-   yuan@yuan ~/works/slamkit_ros_ws $ lsusb
-   // other usb device
-
-   //slamkit device
-   Bus 003 Device 011: ID fccf:f100 SLAMTEC SLAMWARELC
-
-   ```
-
-2. Run the shell script to add udev rule, the script is in the scripts/ folder
-
-   ```bash
-      cd scripts
-      ./add_udev.sh
+      cd /slamkit_ws/src/slamkit_ros2/scripts
+      chmod +x add_udev.sh
+      sudo ./add_udev.sh
    ```
 
 
 ### I. Run slamkit node only
 
 ```bash
-//only run slamkitNode
-roslaunch slamkit_ros slamkit_usb.launch
+ros2 launch slamkit_ros2 slamkit_usb.py
 ```
 
-The slamkitNode will publis 3 topics: 
+The slamkitNode will publish 3 topics, the complementary_filter_node will publish: 
 
 ```bash
-yuan@yuan ~ $ rostopic list
+ros2 topic list
+
+output:
+
 /imu/data_raw
 /imu/mag
 /imu/processed_yaw
+/parameter_events
 /rosout
-/rosout_agg
 ```
 
 topic:
-
 - imu/data_raw (sensor_msgs/Imu)
    Message containing raw IMU data, including angular velocities and linear accelerations.
    acc raw data in m/s^2, and gyro in rad/s.
@@ -91,7 +99,7 @@ topic:
 ### II. Run slamkit node and imu filter node
 
 ```bash
-roslaunch slamkit_ros slamkit_usb_imu_filter.launch
+ros2 slamkit_ros2 slamkit_usb_imu_filter.py
 ```
 
 The complementary_filter_node in imu tools will start at the same time, and the topics are:
@@ -99,23 +107,23 @@ The complementary_filter_node in imu tools will start at the same time, and the 
 - imu/data (sensor_msgs/Imu)
    The fused Imu message, containing the orientation.
 - imu/rpy/filtered (geometry_msgs/Vector3)
-   Debug only: The roll, pitch and yaw angles corresponding to the orientation published on the imu_data topic. (only published when publish_debug_topics == true)
+   Debug only: The roll, pitch and yaw angles corresponding to the orientation published on the imu_data topic. (only published when publish_debug_topics == true in the launch file(s))
 - imu/steady_state (std_msgs/Bool)
-   Debug only: Whether we are in the steady state when doing bias estimation. (only published when ~publish_debug_topics == true)
+   Debug only: Whether we are in the steady state when doing bias estimation. (only published when publish_debug_topics == true in launch file(s))
 
 ### III. View in Rviz
 
 ```bash
-roslaunch slamkit_ros test_slamkit.launch
+ros2 slamkit_ros2 slamkit_test.py
 ```
 
-The test_slamkit.launch will start the following nodes:
+The slamkit_usb_imu_filter.pywill start the following nodes:
 
 ```bash
     complementary_filter_node (imu_complementary_filter/complementary_filter_node)
     rviz (rviz/rviz)
-    slamkitNode (slamkit_ros/slamkitNode)
-    slamkitNodeClient (slamkit_ros/slamkitNodeClient)
+    slamkitNode (slamkit_ros2/slamkitNode)
+    slamkitNodeClient (slamkit_ros2/slamkitNodeClient)
 ```
 
 The rviz will use /imu/data which published from complementary_filter_node and display int window.
@@ -125,63 +133,74 @@ If want to view the roll/pich/yaw data, start another teminal and echo the follo
 - view imu msg (sensor_msgs/Imu) from complementary_filter_node
 
 ```bash
-yuan@yuan ~/works/slamkit_ros_ws $ rostopic echo /imu/data
-header: 
-  seq: 67355
-  stamp: 
-    secs: 1712893929
-    nsecs: 799465854
-  frame_id: "imu"
-orientation: 
-  x: 0.3294100186970593
-  y: -0.01334335189830093
-  z: 0.1402511003896779
-  w: -0.9336169575268038
-orientation_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-angular_velocity: 
-  x: -0.004261057671440972
-  y: 0.02769687486436632
-  z: -0.008522115342881944
-angular_velocity_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-linear_acceleration: 
-  x: 0.74708251953125
-  y: -5.19010009765625
-  z: 6.66392822265625
-linear_acceleration_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+j@j ~/works/slamkit_ros_ws $ ros2 topic echo /imu/data
+header:
+  stamp:
+    sec: 1771906176
+    nanosec: 292503434
+  frame_id: ''
+orientation:
+  x: -0.0006820655739043123
+  y: -0.0008500529982634072
+  z: 0.014506068315529183
+  w: 0.9998941874910956
+orientation_covariance:
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+angular_velocity:
+  x: -0.0029858178752034253
+  y: 0.00029620099814606747
+  z: 0.0025040352709017385
+angular_velocity_covariance:
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+
 ---
 ```
 
 - view roll/pich/yaw in rad
 
 ```bash
-yuan@yuan ~ $ rostopic echo /imu/rpy/filtered 
-header: 
-  seq: 116510
-  stamp: 
-    secs: 1712653629
-    nsecs: 982544281
-  frame_id: "imu"
-vector: 
-  x: -0.5118724746572548
-  y: -0.851032829630307
-  z: 0.24633383804987355
+j@j ~ $ ros2 topic echo /imu/rpy/filtered 
+header:
+  stamp:
+    sec: 1771906234
+    nanosec: 690378419
+  frame_id: ''
+vector:
+  x: -9.70745919974312e-05
+  y: -0.00023339190810723926
+  z: 0.035364466423382306
 ---
 ```
 
 - view roll/pich/yaw in degree
 
 ```bash
-yuan@yuan ~ $ rostopic echo /imu/angles_degree 
-header: 
-  seq: 134377
-  stamp: 
-    secs: 1712653708
-    nsecs: 150230549
-  frame_id: "angle_degree"
-vector: 
-  x: -29.359611349189777
-  y: -48.705977758347366
-  z: 14.224317662550938
+j@j ~ $ ros2 topic echo /imu/angles_degree 
+header:
+  stamp:
+    sec: 1771906296
+    nanosec: 1326880
+  frame_id: angle_degree
+vector:
+  x: -0.039784634346500466
+  y: -0.15514760924453072
+  z: 2.402130786957069
 ---
 ```
 
@@ -189,16 +208,16 @@ vector:
 ### III. View slamkit processed yaw (in degree)
 
 ```bash
-yuan@yuan ~ $ rostopic echo /imu/processed_yaw 
-header: 
-  seq: 8217
-  stamp: 
-    secs: 1712893652
-    nsecs: 718455979
-  frame_id: "imu_processed"
-vector: 
+j@j ~ $ rostopic echo /imu/processed_yaw 
+header:
+  stamp:
+    sec: 1771906332
+    nanosec: 527674486
+  frame_id: imu_processed
+vector:
   x: 0.0
   y: 0.0
-  z: 1.6558480277118701
+  z: 45.11469678271026
+
 ---
 ```
