@@ -1,2 +1,7 @@
 // ignore vscode stuff
 *.vscode
+
+// ignore build stuff
+/build
+/log
+/install

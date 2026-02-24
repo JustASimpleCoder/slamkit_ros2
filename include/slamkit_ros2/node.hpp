@@ -46,7 +46,6 @@
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/state.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/magnetic_field.hpp"
 #include "std_msgs/msg/bool.hpp"
@@ -71,7 +70,7 @@ class ImuPub : public rclcpp::Node
       ImuPub();
       ~ImuPub() = default;
 
-      void imu_publish(const sl_imu_raw_data_t & imu_data, std::string & frame_id);
+      void imu_publish(const sl_imu_raw_data_t & imu_data, const std::string & frame_id);
       void imu_processed_publish(const sl_slamkit_read_imu_processed_response_t & PImu_respc);
 
     

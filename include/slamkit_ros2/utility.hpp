@@ -8,13 +8,9 @@ static inline const char * RX_ENDPOINT_LITERAL  = "usb_rxEndpoint_slamkit";
 
 static inline constexpr double MY_PI  = 3.141592654;
 
-constexpr double degree_to_rad(const double x){
-  return (x * MY_PI) / 180.0;
-};
+static inline constexpr double DEGREE_TO_RAD  = MY_PI / 180.0;
 
-constexpr double rad_to_degree(const double x){
-  return (x * 180.0) / MY_PI;
-};
+static inline constexpr double RAD_TO_DEGREE  = 188.0 / MY_PI;
 
 static inline constexpr double SHIFT_15_BITS = 32768.00;
 static inline constexpr double ACCEl_SENSITIVITY_SCALE_FACTOR = 16384.00;

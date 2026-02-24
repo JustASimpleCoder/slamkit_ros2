@@ -59,7 +59,7 @@ ImuPub::ImuPub() : Node("slamkit_node"),
     });
 }
 
-void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, std::string & frame_id)
+void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string & frame_id)
 {
     if (last_ts_ms == imu_data.timestamp)
     {
@@ -114,9 +114,9 @@ void ImuPub::imu_processed_publish(const sl_slamkit_read_imu_processed_response_
     double acc_y = PImu_resp.acc.y_d4/10000.0;
     double acc_z = PImu_resp.acc.z_d4/10000.0;
 
-    double gyro_x = degree_to_rad(PImu_resp.gyro.wx_d4/10000.0);
-    double gyro_y = degree_to_rad(PImu_resp.gyro.wy_d4/10000.0);
-    double gyro_z = degree_to_rad(PImu_resp.gyro.wz_d4/10000.0);
+    double gyro_x = (PImu_resp.gyro.wx_d4/10000.0) * DEGREE_TO_RAD;
+    double gyro_y = (PImu_resp.gyro.wy_d4/10000.0) * DEGREE_TO_RAD;
+    double gyro_z = (PImu_resp.gyro.wz_d4/10000.0) * DEGREE_TO_RAD;
 
     double gyro_sum_x = (std::int32_t)PImu_resp.gyro.sum_x_d4/10000.0;
     double gyro_sum_y = (std::int32_t)PImu_resp.gyro.sum_y_d4/10000.0;
@@ -127,7 +127,7 @@ void ImuPub::imu_processed_publish(const sl_slamkit_read_imu_processed_response_
 
     imu_processed_msg_.vector.x =  0;
     imu_processed_msg_.vector.y =  0;
-    imu_processed_msg_.vector.z =  rad_to_degree(gyro_sum_z);
+    imu_processed_msg_.vector.z =  gyro_sum_z * RAD_TO_DEGREE;
 
     imu_processed_pub_->publish(imu_processed_msg_);
     processed_last_ts_ms = PImu_resp.timestamp;
@@ -137,13 +137,7 @@ void ImuPub::imu_processed_publish(const sl_slamkit_read_imu_processed_response_
 // //***************************************** Main Function ****************************************************8
 int main(int argc, char * argv[])
 {
-    // initialize
     rclcpp::init(argc, argv);   
-
-    // define parameters
-    std::string channel_type;
-    std::string frame_id;
-
     std::shared_ptr<ImuPub> main_node = std::make_shared<ImuPub>();
 
     // echo slamkit version info 
@@ -159,6 +153,7 @@ int main(int argc, char * argv[])
 
     std::shared_ptr<ISlamkitDriver> slamkit_drv = createSlamkitDriver();
 
+    const std::string & frame_id = main_node->get_parameter(FRAME_ID_LITERAL).as_string(); 
     const std::string & channel_type = main_node->get_parameter(CHANNEL_TYPE_LITERAL).as_string(); 
 
     // usb communication
