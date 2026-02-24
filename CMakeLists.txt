@@ -75,8 +75,7 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_cpplint REQUIRED)
-  set(ament_cmake_cppcheck_FOUND REQUIRED)
+  
   # the following line skips the linter which checks for copyrights
   # comment the line when a copyright and license is added to all source files
   #set(ament_cmake_copyright_FOUND TRUE)
@@ -84,6 +83,13 @@ if(BUILD_TESTING)
   # comment the line when this package is in a git repo and when
   # a copyright and license is added to all source files
   #set(ament_cmake_cpplint_FOUND TRUE)
+  set(ament_cmake_cppcheck_FOUND REQUIRED)
+
+  FILE(GLOB_RECURSE SLAMKITSDK_SRC 
+    "${SLAMKITSDK_PATH}/src/arch/linux/*.cpp"
+    "${SLAMKITSDK_PATH}/src/hal/*.cpp"
+    "${SLAMKITSDK_PATH}/src/*.cpp"
+  )
   set(AMENT_LINT_AUTO_EXCLUDE_DIRS "${SLAMKITSDK_PATH}")
   list(APPEND AMENT_LINT_AUTO_FILE_EXCLUDE
     ${SLAMKITSDK_SRC}

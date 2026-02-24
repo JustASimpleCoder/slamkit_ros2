@@ -1,42 +1,33 @@
-/*
- *  SLAMKIT ROS NODE
- *
- *  Copyright (c) 2009 - 2014 RoboPeak Team
- *  http://www.robopeak.com
- *  Copyright (c) 2014 - 2016 Shanghai Slamtec Co., Ltd.
- *  http://www.slamtec.com
- *
- */
-/*
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
-/*
- *
- *  Modified by JustASimpleCoder february 23 2026
- *
- *
- */
+// Copyright (c) 2014, RoboPeak
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+// OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+// EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// RPlidar ROS Node client test app
+// Copyright 2009 - 2014 RoboPeak Team
+// http://www.robopeak.com
+//
+//  Modified by JustASimpleCoder february 23 2026
 
 #include "slamkit_ros2/node.hpp"
 
@@ -88,7 +79,7 @@ void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string &
   double mag_y = imu_data.mag_y * 4900 / SHIFT_15_BITS / 1000000;
   double mag_z = imu_data.mag_z * 4900 / SHIFT_15_BITS / 1000000;
 
-  imu_msg_.header.stamp = this->get_clock()->now();     // ros::Time::now();
+  imu_msg_.header.stamp = this->get_clock()->now();
   imu_msg_.header.frame_id = frame_id;
   imu_msg_.linear_acceleration.x = acc_x;
   imu_msg_.linear_acceleration.y = acc_y;
@@ -100,7 +91,7 @@ void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string &
 
   imu_pub_->publish(imu_msg_);
 
-  mag_msg_.header.stamp = this->get_clock()->now();    // ros::Time::now();
+  mag_msg_.header.stamp = this->get_clock()->now();
   mag_msg_.header.frame_id = "magnetic";
   mag_msg_.magnetic_field.x = mag_x;
   mag_msg_.magnetic_field.y = mag_y;
@@ -111,7 +102,7 @@ void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string &
   last_ts_ms = imu_data.timestamp;
 }
 
-// // ------------------------- Part Raw IMU -----------------
+
 void ImuPub::imu_processed_publish(const sl_slamkit_read_imu_processed_response_t & PImu_resp)
 {
   if (processed_last_ts_ms == PImu_resp.timestamp) {
@@ -141,8 +132,6 @@ void ImuPub::imu_processed_publish(const sl_slamkit_read_imu_processed_response_
   processed_last_ts_ms = PImu_resp.timestamp;
 }
 
-
-// //***************************************** Main Function ****************************************************8
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
@@ -154,7 +143,10 @@ int main(int argc, char * argv[])
   int ver_patch = SL_SLAMKIT_SDK_VERSION_PATCH;
   RCLCPP_INFO(
     rclcpp::get_logger(LOGGER_NODE_MAIN),
-    "slamkit running on ROS package slamkit_ros, SDK Version:%d.%d.%d", ver_major, ver_minor, ver_patch
+    "slamkit running on ROS package slamkit_ros, SDK Version:%d.%d.%d",
+    ver_major,
+    ver_minor,
+    ver_patch
   );
 
   sl_result op_result;
@@ -181,7 +173,6 @@ int main(int argc, char * argv[])
     );
 
     if (SL_IS_FAIL((slamkit_drv)->connect(_channel))) {
-
       RCLCPP_ERROR(rclcpp::get_logger(LOGGER_NODE_MAIN), "Error, cannot connect to slamkit.");
       return -1;
     }
@@ -210,7 +201,6 @@ int main(int argc, char * argv[])
       RCLCPP_ERROR(rclcpp::get_logger(LOGGER_NODE_MAIN), "can not get Imu Raw Data.\n");
     }
     main_node->imu_publish(imu_data, frame_id);
-    //publish_mag(&mag_pub, imu_data);
 
     op_result = slamkit_drv->set_motion_hit_and_get_imu_processed(req, processed_data);
     if (SL_IS_FAIL(op_result)) {
