@@ -138,7 +138,7 @@ header:
   stamp:
     sec: 1771906176
     nanosec: 292503434
-  frame_id: ''
+  frame_id: imu
 orientation:
   x: -0.0006820655739043123
   y: -0.0008500529982634072
@@ -180,7 +180,7 @@ header:
   stamp:
     sec: 1771906234
     nanosec: 690378419
-  frame_id: ''
+  frame_id: imu
 vector:
   x: -9.70745919974312e-05
   y: -0.00023339190810723926
