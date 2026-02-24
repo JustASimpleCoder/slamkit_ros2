@@ -46,17 +46,17 @@ ImuPub::ImuPub()
 
   this->declare_parameters<std::string>(
     "", {
-    {CHANNEL_TYPE_LITERAL, "usb"},
-    {FRAME_ID_LITERAL, "imu"}
+    {LIRERAL_CHANNEL_TYPE, "usb"},
+    {LITERAL_FRAME_ID, FRAMDE_ID_IMU}
   });
 
   this->declare_parameters<int>(
     "", {
-    {VENDOR_ID_LITERAL, 64719},
-    {PRODUCT_ID_LITERAL, 61696},
-    {INTERFACE_ID_LITERAL, 3},
-    {TX_ENDPOINT_LITERAL, 5},
-    {RX_ENDPOINT_LITERAL, 5}
+    {LITERAL_VENDOR_ID, 64719},
+    {LITERAL_PRODUCT_ID, 61696},
+    {LITERAL_INTERFACE_ID, 3},
+    {LITERAL_TX_ENDPOINT, 5},
+    {LITERAL_RX_ENDPOINT, 5}
   });
 }
 
@@ -71,9 +71,9 @@ void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string &
   double acc_y = imu_data.acc_y / SHIFT_15_BITS * 2 * 9.8;
   double acc_z = imu_data.acc_z / SHIFT_15_BITS * 2 * 9.8;
 
-  double gyro_x = imu_data.gyro_x / SHIFT_15_BITS * 2000 / 180 * 3.1415926;
-  double gyro_y = imu_data.gyro_y / SHIFT_15_BITS * 2000 / 180 * 3.1415926;
-  double gyro_z = imu_data.gyro_z / SHIFT_15_BITS * 2000 / 180 * 3.1415926;
+  double gyro_x = imu_data.gyro_x / SHIFT_15_BITS * 2000 / 180 * MY_PI;
+  double gyro_y = imu_data.gyro_y / SHIFT_15_BITS * 2000 / 180 * MY_PI;
+  double gyro_z = imu_data.gyro_z / SHIFT_15_BITS * 2000 / 180 * MY_PI;
 
   double mag_x = imu_data.mag_x * 4900 / SHIFT_15_BITS / 1000000;
   double mag_y = imu_data.mag_y * 4900 / SHIFT_15_BITS / 1000000;
@@ -92,7 +92,7 @@ void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string &
   imu_pub_->publish(imu_msg_);
 
   mag_msg_.header.stamp = this->get_clock()->now();
-  mag_msg_.header.frame_id = "magnetic";
+  mag_msg_.header.frame_id = FRAMDE_ID_MAG;
   mag_msg_.magnetic_field.x = mag_x;
   mag_msg_.magnetic_field.y = mag_y;
   mag_msg_.magnetic_field.z = mag_z;
@@ -122,7 +122,7 @@ void ImuPub::imu_processed_publish(const sl_slamkit_read_imu_processed_response_
   double gyro_sum_z = (std::int32_t)PImu_resp.gyro.sum_z_d4 / 10000.0;
 
   imu_processed_msg_.header.stamp = this->get_clock()->now();
-  imu_processed_msg_.header.frame_id = "imu_processed";
+  imu_processed_msg_.header.frame_id = FRAMDE_ID_IMU_PROCESSED;
 
   imu_processed_msg_.vector.x = 0;
   imu_processed_msg_.vector.y = 0;
@@ -144,39 +144,36 @@ int main(int argc, char * argv[])
   RCLCPP_INFO(
     rclcpp::get_logger(LOGGER_NODE_MAIN),
     "slamkit running on ROS package slamkit_ros, SDK Version:%d.%d.%d",
-    ver_major,
-    ver_minor,
-    ver_patch
-  );
+    ver_major, ver_minor, ver_patch);
 
   sl_result op_result;
 
   std::shared_ptr<ISlamkitDriver> slamkit_drv = createSlamkitDriver();
 
-  const std::string frame_id = main_node->get_parameter(FRAME_ID_LITERAL).as_string();
-  const std::string channel_type = main_node->get_parameter(CHANNEL_TYPE_LITERAL).as_string();
+  const std::string frame_id = main_node->get_parameter(LITERAL_FRAME_ID).as_string();
+  const std::string channel_type = main_node->get_parameter(LIRERAL_CHANNEL_TYPE).as_string();
 
   // usb communication
   if (channel_type == "usb") {
     // SLAMKIT usb channel connect
     auto _channel = createUSBChannel(
       static_cast<std::uint16_t>(
-        main_node->get_parameter(VENDOR_ID_LITERAL).as_int()),
+        main_node->get_parameter(LITERAL_VENDOR_ID).as_int()),
       static_cast<std::uint16_t>(
-        main_node->get_parameter(PRODUCT_ID_LITERAL).as_int()),
+        main_node->get_parameter(LITERAL_PRODUCT_ID).as_int()),
       static_cast<std::uint16_t>(
-        main_node->get_parameter(INTERFACE_ID_LITERAL).as_int()),
+        main_node->get_parameter(LITERAL_INTERFACE_ID).as_int()),
       static_cast<std::uint16_t>(
-        main_node->get_parameter(TX_ENDPOINT_LITERAL).as_int()),
+        main_node->get_parameter(LITERAL_TX_ENDPOINT).as_int()),
       static_cast<std::uint16_t>
-      (main_node->get_parameter(RX_ENDPOINT_LITERAL).as_int())
+      (main_node->get_parameter(LITERAL_RX_ENDPOINT).as_int())
     );
 
     if (SL_IS_FAIL((slamkit_drv)->connect(_channel))) {
       RCLCPP_ERROR(rclcpp::get_logger(LOGGER_NODE_MAIN), "Error, cannot connect to slamkit.");
       return -1;
     }
-    RCLCPP_INFO(rclcpp::get_logger(LOGGER_NODE_MAIN), "slamkit deviece open  ok");
+    RCLCPP_INFO(rclcpp::get_logger(LOGGER_NODE_MAIN), "slamkit deviece open ok");
   } else {
     RCLCPP_ERROR(
       rclcpp::get_logger(LOGGER_NODE_MAIN),
@@ -185,17 +182,15 @@ int main(int argc, char * argv[])
     return -1;
   }
 
-  // define parameters
   sl_imu_raw_data_t imu_data;
 
   sl_slamkit_read_imu_processed_request_t req;
   sl_slamkit_read_imu_processed_response_t processed_data;
 
   req.motion_hint_bitmap = SLAMKIT_REQUEST_MOTION_HINT_BITMAP_MOTION_BIT;
-  // main loop
-  rclcpp::Rate rate(460);    // loop rate
+  
+  rclcpp::Rate rate(460);
   while (rclcpp::ok()) {
-    // 3. Publish IMU Raw topic
     op_result = slamkit_drv->getImuRawData(imu_data);
     if (SL_IS_FAIL(op_result)) {
       RCLCPP_ERROR(rclcpp::get_logger(LOGGER_NODE_MAIN), "can not get Imu Raw Data.\n");
@@ -207,7 +202,7 @@ int main(int argc, char * argv[])
       RCLCPP_ERROR(rclcpp::get_logger(LOGGER_NODE_MAIN), "can not get Imu processed Data.\n");
     }
     main_node->imu_processed_publish(processed_data);
-    rclcpp::spin_some(main_node);     // rclcpp::spinOnce(main_node);
+    rclcpp::spin_some(main_node);
     rate.sleep();
   }
 

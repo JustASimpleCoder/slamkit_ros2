@@ -27,7 +27,7 @@
 // Copyright 2009 - 2014 RoboPeak Team
 // http://www.robopeak.com
 //
-//  Modified by JustASimpleCoder february 23 2026
+// Modified by JustASimpleCoder february 23 2026
 
 #include "slamkit_ros2/client.hpp"
 
@@ -36,20 +36,10 @@ ClientNode::ClientNode()
   angle_{}
 {
   degree_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>(TOPIC_IMU_ANGLE, 100);
-  // degree_pub_timer_ = this->create_wall_timer(
-  //   500ms, std::bind(&ClientNode::imu_timer_callback, this)
-  // );
-
   degree_sub_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
     TOPIC_IMU_RPY, 10, std::bind(&ClientNode::imu_callback, this, std::placeholders::_1)
   );
 }
-
-void ClientNode::imu_timer_callback()
-{
-  degree_pub_->publish(angle_);
-}
-
 
 void ClientNode::imu_callback(const geometry_msgs::msg::Vector3Stamped::ConstSharedPtr & angle_rad)
 {
@@ -59,14 +49,13 @@ void ClientNode::imu_callback(const geometry_msgs::msg::Vector3Stamped::ConstSha
 
   angle_.header.stamp = this->get_clock()->now();
 
-  angle_.header.frame_id = "angle_degree";
+  angle_.header.frame_id = FRAME_ID_ANGLE;
   angle_.vector.x = angle_degree_roll;
   angle_.vector.y = angle_degree_pitch;
   angle_.vector.z = angle_degree_yaw;
 
   degree_pub_->publish(angle_);
 }
-
 
 int main(int argc, char ** argv)
 {

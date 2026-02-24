@@ -55,9 +55,7 @@ public:
 
 private:
   void imu_callback(const geometry_msgs::msg::Vector3Stamped::ConstSharedPtr & angle_rad);
-  void imu_timer_callback();
-
-  rclcpp::TimerBase::SharedPtr degree_pub_timer_;
+ 
   rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr degree_pub_;
   rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr degree_sub_;
   geometry_msgs::msg::Vector3Stamped angle_;
