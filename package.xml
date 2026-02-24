@@ -4,7 +4,7 @@
   <version>0.1.0</version>
   <description>The slamkit ros2 package</description>
 
-  <maintainer email="thejacobcohen@gmail.com.com">j</maintainer>
+  <maintainer email="thejacobcohen@gmail.com">j</maintainer>
   <license>BSD</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
