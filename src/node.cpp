@@ -31,31 +31,35 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <ros/ros.h>
-//#include <tf/transform_broadcaster.h>
-//#include <tf2/LinearMath/Quaternion.h>
-//#include <tf2/LinearMath/Matrix3x3.h>
-//#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-//#include <tf2_ros/transform_broadcaster.h>
-//#include <geometry_msgs/TransformStamped.h>
-//#include <sensor_msgs/Range.h>
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/MagneticField.h>
-#include <sl_slamkit.h>
-#include <geometry_msgs/Vector3Stamped.h>
 
-#define DEG2RAD(x) ((x)*M_PI / 180.0)
-#define SHIFT15BITS 32768.00
-#define SCALE_FACTOR 16384.00
-using namespace sl;
+#include "slamkit_ros2/node.hpp"
+
+ImuPub::ImuPub() : Node("slamkit_node"),
+    imu_pub_timer_{},
+    imu_msg_{},
+    imu_processed_msg_{},
+    mag_msg_{}
+{
+    imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data_raw", 100);
+    imu_processed_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>("imu/processed_yaw", 100);
+    mag_pub_ = this->create_publisher<sensor_msgs::msg::MagneticField>("imu/mag", 100);
 
 
-static sl_u32 last_ts_ms = 0; 
-static sl_u32 processed_last_ts_ms = 0;
+    this->declare_parameters<std::string>("", {
+        {CHANNEL_TYPE_LITERAL, "usb"},
+        {FRAME_ID_LITERAL,     "imu"}
+    });
 
+    this->declare_parameters<int>("", {
+        {VENDOR_ID_LITERAL,    64719},
+        {PRODUCT_ID_LITERAL,   61696},
+        {INTERFACE_ID_LITERAL, 3},
+        {TX_ENDPOINT_LITERAL,  5},
+        {RX_ENDPOINT_LITERAL,  5}
+    });
+}
 
-// ------------------------- Part Raw IMU -----------------
-void publish_imu(ros::Publisher* pub, ros::Publisher* pub_mag, const sl_imu_raw_data_t& imu_data, std::string& frame_id)
+void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, std::string & frame_id)
 {
     if (last_ts_ms == imu_data.timestamp)
     {
@@ -63,49 +67,43 @@ void publish_imu(ros::Publisher* pub, ros::Publisher* pub_mag, const sl_imu_raw_
     }
 
     // according to datasheet,sensitivity scale factor is 16384, +-2g
-    double acc_x = imu_data.acc_x / SHIFT15BITS * 2 * 9.8;
-    double acc_y = imu_data.acc_y / SHIFT15BITS * 2 * 9.8;
-    double acc_z = imu_data.acc_z / SHIFT15BITS * 2 * 9.8;
+    double acc_x = imu_data.acc_x / SHIFT_15_BITS * 2 * 9.8;
+    double acc_y = imu_data.acc_y / SHIFT_15_BITS * 2 * 9.8;
+    double acc_z = imu_data.acc_z / SHIFT_15_BITS * 2 * 9.8;
     
-    //double acc_x_test = static_cast<double>(imu_data.acc_x);
+    double gyro_x = imu_data.gyro_x / SHIFT_15_BITS * 2000 / 180 * 3.1415926;
+    double gyro_y = imu_data.gyro_y / SHIFT_15_BITS * 2000 / 180 * 3.1415926;
+    double gyro_z = imu_data.gyro_z / SHIFT_15_BITS * 2000 / 180 * 3.1415926;
 
-    double gyro_x = imu_data.gyro_x / SHIFT15BITS * 2000 / 180 * 3.1415926;
-    double gyro_y = imu_data.gyro_y / SHIFT15BITS * 2000 / 180 * 3.1415926;
-    double gyro_z = imu_data.gyro_z / SHIFT15BITS * 2000 / 180 * 3.1415926;
-
-
-    double mag_x = imu_data.mag_x * 4900 / SHIFT15BITS / 1000000;
-    double mag_y = imu_data.mag_y * 4900 / SHIFT15BITS / 1000000;
-    double mag_z = imu_data.mag_z * 4900 / SHIFT15BITS / 1000000;
-
-    sensor_msgs::Imu Imu;
+    double mag_x = imu_data.mag_x * 4900 / SHIFT_15_BITS / 1000000;
+    double mag_y = imu_data.mag_y * 4900 / SHIFT_15_BITS / 1000000;
+    double mag_z = imu_data.mag_z * 4900 / SHIFT_15_BITS / 1000000;
     
-    Imu.header.stamp = ros::Time::now();
-    Imu.header.frame_id = frame_id;
-    Imu.linear_acceleration.x =  acc_x;
-    Imu.linear_acceleration.y =  acc_y;
-    Imu.linear_acceleration.z =  acc_z;
+    imu_msg_.header.stamp =  this->get_clock()->now();  // ros::Time::now();
+    imu_msg_.header.frame_id = frame_id;
+    imu_msg_.linear_acceleration.x =  acc_x;
+    imu_msg_.linear_acceleration.y =  acc_y;
+    imu_msg_.linear_acceleration.z =  acc_z;
 
-    Imu.angular_velocity.x = gyro_x;
-    Imu.angular_velocity.y = gyro_y;
-    Imu.angular_velocity.z = gyro_z;
+    imu_msg_.angular_velocity.x = gyro_x;
+    imu_msg_.angular_velocity.y = gyro_y;
+    imu_msg_.angular_velocity.z = gyro_z;
 
-    pub->publish(Imu);
-
-    sensor_msgs::MagneticField mag;
+    imu_pub_->publish(imu_msg_);
     
-    mag.header.stamp = ros::Time::now();
-    mag.header.frame_id = "magnetic";
-    mag.magnetic_field .x =  mag_x;
-    mag.magnetic_field .y =  mag_y;
-    mag.magnetic_field .z =  mag_z;
+    mag_msg_.header.stamp = this->get_clock()->now();  // ros::Time::now();
+    mag_msg_.header.frame_id = "magnetic";
+    mag_msg_.magnetic_field .x =  mag_x;
+    mag_msg_.magnetic_field .y =  mag_y;
+    mag_msg_.magnetic_field .z =  mag_z;
 
-    pub_mag->publish(mag);
+    mag_pub_->publish(mag_msg_);
 
     last_ts_ms = imu_data.timestamp;
 }
 
-void publish_imu_processed(ros::Publisher* pub, const sl_slamkit_read_imu_processed_response_t& PImu_resp)
+// // ------------------------- Part Raw IMU -----------------
+void ImuPub::imu_processed_publish(const sl_slamkit_read_imu_processed_response_t & PImu_resp)
 {
     if (processed_last_ts_ms == PImu_resp.timestamp)
     {
@@ -116,89 +114,84 @@ void publish_imu_processed(ros::Publisher* pub, const sl_slamkit_read_imu_proces
     double acc_y = PImu_resp.acc.y_d4/10000.0;
     double acc_z = PImu_resp.acc.z_d4/10000.0;
 
-    double gyro_x = DEG2RAD(PImu_resp.gyro.wx_d4/10000.0);
-    double gyro_y = DEG2RAD(PImu_resp.gyro.wy_d4/10000.0);
-    double gyro_z = DEG2RAD(PImu_resp.gyro.wz_d4/10000.0);
+    double gyro_x = degree_to_rad(PImu_resp.gyro.wx_d4/10000.0);
+    double gyro_y = degree_to_rad(PImu_resp.gyro.wy_d4/10000.0);
+    double gyro_z = degree_to_rad(PImu_resp.gyro.wz_d4/10000.0);
 
     double gyro_sum_x = (std::int32_t)PImu_resp.gyro.sum_x_d4/10000.0;
     double gyro_sum_y = (std::int32_t)PImu_resp.gyro.sum_y_d4/10000.0;
     double gyro_sum_z = (std::int32_t)PImu_resp.gyro.sum_z_d4/10000.0;
 
-    geometry_msgs::Vector3Stamped imu_processed;
-    imu_processed.header.stamp = ros::Time::now();
-    imu_processed.header.frame_id = "imu_processed";
+    imu_processed_msg_.header.stamp = this->get_clock()->now();
+    imu_processed_msg_.header.frame_id = "imu_processed";
 
-    imu_processed.vector.x =  0;
-    imu_processed.vector.y =  0;
-    imu_processed.vector.z =  gyro_sum_z * 180.0 / 3.141592654;
+    imu_processed_msg_.vector.x =  0;
+    imu_processed_msg_.vector.y =  0;
+    imu_processed_msg_.vector.z =  rad_to_degree(gyro_sum_z);
 
-
-    pub->publish(imu_processed);
+    imu_processed_pub_->publish(imu_processed_msg_);
     processed_last_ts_ms = PImu_resp.timestamp;
 }
 
 
-
-//***************************************** Main Function ****************************************************8
+// //***************************************** Main Function ****************************************************8
 int main(int argc, char * argv[])
 {
     // initialize
-    ros::init(argc, argv, "slamkit_node");   
+    rclcpp::init(argc, argv);   
 
     // define parameters
     std::string channel_type;
     std::string frame_id;
 
-    int usb_venderId_slamkit;
-    int usb_productId_slamkit;
-    int usb_interfaceId_slamkit;
-    int usb_txEndpoint_slamkit;
-    int usb_rxEndpoint_slamkit;
-    
-    // Initialize Publisher
-    ros::NodeHandle nh;
-    ros::Publisher imu_pub = nh.advertise<sensor_msgs::Imu>("imu/data_raw", 100);
-    ros::Publisher imu_processed_pub = nh.advertise<geometry_msgs::Vector3Stamped>("imu/processed_yaw", 100);
-    ros::Publisher mag_pub = nh.advertise<sensor_msgs::MagneticField>("imu/mag", 100);
-    
-
-    // get param
-    ros::NodeHandle nh_private("~"); 
-    nh_private.param<std::string>("channel_type", channel_type, "usb");
-
-    // slamkit
-    nh_private.param<int>("usb_venderId_slamkit", usb_venderId_slamkit, 64719);
-    nh_private.param<int>("usb_productId_slamkit", usb_productId_slamkit, 61696);
-    nh_private.param<int>("usb_interfaceId_slamkit", usb_interfaceId_slamkit, 3);
-    nh_private.param<int>("usb_txEndpoint_slamkit", usb_txEndpoint_slamkit, 5);
-    nh_private.param<int>("usb_rxEndpoint_slamkit", usb_rxEndpoint_slamkit, 5);
-    nh_private.param<std::string>("frame_id", frame_id, "imu");
+    std::shared_ptr<ImuPub> main_node = std::make_shared<ImuPub>();
 
     // echo slamkit version info 
     int ver_major = SL_SLAMKIT_SDK_VERSION_MAJOR;
     int ver_minor = SL_SLAMKIT_SDK_VERSION_MINOR;
     int ver_patch = SL_SLAMKIT_SDK_VERSION_PATCH;   
-    ROS_INFO("slamkit running on ROS package slamkit_ros, SDK Version:%d.%d.%d",ver_major,ver_minor,ver_patch);
+    RCLCPP_INFO(
+        rclcpp::get_logger("main_node"),
+        "slamkit running on ROS package slamkit_ros, SDK Version:%d.%d.%d",ver_major,ver_minor,ver_patch
+    );
 
     sl_result  op_result;
 
     std::shared_ptr<ISlamkitDriver> slamkit_drv = createSlamkitDriver();
 
+    const std::string & channel_type = main_node->get_parameter(CHANNEL_TYPE_LITERAL).as_string(); 
+
     // usb communication
     if (channel_type == "usb")
     {
         // SLAMKIT usb channel connect
-        auto _channel = createUSBChannel(usb_venderId_slamkit, usb_productId_slamkit, usb_interfaceId_slamkit, usb_txEndpoint_slamkit, usb_rxEndpoint_slamkit);
+        auto _channel = createUSBChannel(
+            static_cast<std::uint16_t>(
+                main_node->get_parameter(VENDOR_ID_LITERAL).as_int()),
+            static_cast<std::uint16_t>(
+                main_node->get_parameter(PRODUCT_ID_LITERAL).as_int()),
+            static_cast<std::uint16_t>(
+                main_node->get_parameter(INTERFACE_ID_LITERAL).as_int()),
+            static_cast<std::uint16_t>(
+                main_node->get_parameter(TX_ENDPOINT_LITERAL).as_int()),
+            static_cast<std::uint16_t>
+            (main_node->get_parameter(RX_ENDPOINT_LITERAL).as_int())
+        );
+
         if (SL_IS_FAIL((slamkit_drv)->connect(_channel)))
         {
-            ROS_ERROR("Error, cannot connect to slamkit.");
+            
+            RCLCPP_ERROR(rclcpp::get_logger("slamkit_node"), "Error, cannot connect to slamkit.");
             return -1;
         }
-        ROS_INFO("slamkit deviece open  ok");
+        RCLCPP_INFO(rclcpp::get_logger("slamkit_node"), "slamkit deviece open  ok");
     }
     else
     {
-        ROS_ERROR("Error, channel not support yet, please use usb channel.");
+        RCLCPP_ERROR(
+            rclcpp::get_logger("slamkit_node"), 
+            "Error, channel not support yet, please use usb channel."
+        );
         return -1;
     }
 
@@ -210,29 +203,29 @@ int main(int argc, char * argv[])
 
     req.motion_hint_bitmap = SLAMKIT_REQUEST_MOTION_HINT_BITMAP_MOTION_BIT;
     // main loop
-    ros::Rate rate(460);  // loop rate
-    while (ros::ok())
+    rclcpp::Rate rate(460);  // loop rate
+    while (rclcpp::ok())
     {
         // 3. Publish IMU Raw topic
         op_result = slamkit_drv->getImuRawData(imu_data);
         if (SL_IS_FAIL(op_result))
         {
-            ROS_ERROR("can not get Imu Raw Data.\n");
+            RCLCPP_ERROR(rclcpp::get_logger("slamkit_node") , "can not get Imu Raw Data.\n");
         }
-        publish_imu(&imu_pub, &mag_pub, imu_data, frame_id);
+        main_node->imu_publish(imu_data, frame_id);
         //publish_mag(&mag_pub, imu_data);
 
         op_result = slamkit_drv->set_motion_hit_and_get_imu_processed(req, processed_data);
         if (SL_IS_FAIL(op_result))
         {
-            ROS_ERROR("can not get Imu processed Data.\n");
+            RCLCPP_ERROR(rclcpp::get_logger("slamkit_node") , "can not get Imu processed Data.\n");
         }
-        publish_imu_processed(&imu_processed_pub, processed_data);
-
-        ros::spinOnce();  
-        rate.sleep();     
+        main_node->imu_processed_publish(processed_data);
+        rclcpp::spin_some(main_node); // rclcpp::spinOnce(main_node);  
+        rate.sleep();
     }
 
     slamkit_drv->disconnect();
     return 0;
 }
+

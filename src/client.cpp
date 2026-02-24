@@ -33,49 +33,62 @@
  *  http://www.robopeak.com
  * 
  */
+/*
+ *  
+ *  Modified by JustASimpleCOder february 23 2026
+ *
+ * 
+ */
+
+#include "slamkit_ros2/client.hpp"
+
+ClientNode::ClientNode() : Node("degree_pub"),
+  angle_{}
+{
+  degree_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>("imu/angles_degree", 100);
+  // degree_pub_timer_ = this->create_wall_timer(
+  //   500ms, std::bind(&ClientNode::imu_timer_callback, this)
+  // );
+
+  degree_sub_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
+    "topic", 10, std::bind(&ClientNode::imu_callback, this, std::placeholders::_1)
+  );
+}
+
+void ClientNode::imu_timer_callback()
+{
+  degree_pub_->publish(angle_);
+}
 
 
-#include "ros/ros.h"
-#include "sensor_msgs/Imu.h"
-#include <geometry_msgs/Vector3Stamped.h>
-
-#define MY_PI   (3.141592654)
-
-ros::Publisher degree_pub;
-
-void imuCallback(const geometry_msgs::Vector3Stamped::ConstPtr& angle_rad)
+void ClientNode::imu_callback(const geometry_msgs::msg::Vector3Stamped::ConstSharedPtr & angle_rad)
 {
     //ROS_INFO("I heard a slamkit %s[%u]:", imu->header.frame_id.c_str(), imu->header.seq);
-
     //ROS_INFO("I heard a slamkit %s[%u]:", angle_rad->header.frame_id.c_str(), angle_rad->header.seq);
 
-
-    double angle_degree_roll = angle_rad->vector.x * 180.0 / MY_PI;
-    double angle_degree_pitch = angle_rad->vector.y * 180.0 / MY_PI;
-    double angle_degree_yaw = angle_rad->vector.z * 180.0 / MY_PI;
-
-
-    geometry_msgs::Vector3Stamped angle;
+    const double angle_degree_roll = angle_rad->vector.x * 180.0 / MY_PI;
+    const double angle_degree_pitch = angle_rad->vector.y * 180.0 / MY_PI;
+    const double angle_degree_yaw = angle_rad->vector.z * 180.0 / MY_PI;
     
-    angle.header.stamp = ros::Time::now();
-    angle.header.frame_id = "angle_degree";
-    angle.vector.x =  angle_degree_roll;
-    angle.vector.y =  angle_degree_pitch;
-    angle.vector.z =  angle_degree_yaw;
+    angle_.header.stamp = this->get_clock()->now();
 
-    degree_pub.publish(angle);
-
+    angle_.header.frame_id = "angle_degree";
+    angle_.vector.x =  angle_degree_roll;
+    angle_.vector.y =  angle_degree_pitch;
+    angle_.vector.z =  angle_degree_yaw;
+    
+    degree_pub_->publish(angle_);
 }
+
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "slamkit_node_client");
-    ros::NodeHandle nh;
-
-    ros::Subscriber sub = nh.subscribe<geometry_msgs::Vector3Stamped>("imu/rpy/filtered", 100, imuCallback);
-
-    degree_pub = nh.advertise<geometry_msgs::Vector3Stamped>("imu/angles_degree", 100);
-
-    ros::spin();
-    return 0;
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<ClientNode>());
+  rclcpp::shutdown();
+  return 0;
 }
+
+
+
+

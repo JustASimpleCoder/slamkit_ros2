@@ -1,6 +1,6 @@
 # SLIMKIT ROS package
 
-ROS node and test application for slamkit
+ROS2 node and test application for slamkit, this is forked from slamtec toolboocx to work with ros2
 
 ## Dependency
 
