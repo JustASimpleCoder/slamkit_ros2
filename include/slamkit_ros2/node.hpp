@@ -47,7 +47,7 @@
 #include "slamkit_ros2/utility.hpp"
 
 
-#include "sl_slamkit.h"
+#include "slamkit/include/sl_slamkit.h"
 
 using sl::CHANNEL_TYPE_SERIALPORT;
 using sl::sl_imu_raw_data_t;

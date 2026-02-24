@@ -6,6 +6,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 set(SLAMKITSDK_PATH "./sdk/slamkit/")
+set(SLAMKITSDK_ROS_PATH "./sdk")
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}")
 
@@ -44,6 +45,7 @@ link_directories(${LIBUSB_LIBRARY_DIRS})
 include_directories(
   ${SLAMKITSDK_PATH}/include
   ${SLAMKITSDK_PATH}/src
+  ${SLAMKITSDK_ROS_PATH}
   ${PROJECT_SOURCE_DIR}/include
 )
 
@@ -82,17 +84,36 @@ if(BUILD_TESTING)
   # the following line skips cpplint (only works in a git repo)
   # comment the line when this package is in a git repo and when
   # a copyright and license is added to all source files
-  #set(ament_cmake_cpplint_FOUND TRUE)
-  set(ament_cmake_cppcheck_FOUND REQUIRED)
+  # set(ament_cmake_cpplint_FOUND TRUE)
+  # set(ament_cmake_cppcheck_FOUND REQUIRED)
 
-  FILE(GLOB_RECURSE SLAMKITSDK_SRC 
+  FILE(GLOB_RECURSE EXCLUDE_FILES 
     "${SLAMKITSDK_PATH}/src/arch/linux/*.cpp"
+    "${SLAMKITSDK_PATH}/src/arch/linux/*.hpp"
+    "${SLAMKITSDK_PATH}/src/arch/linux/*.h"
+    "${SLAMKITSDK_PATH}/src/arch/macOS/*.cpp"
+    "${SLAMKITSDK_PATH}/src/arch/macOS/*.h"
+    "${SLAMKITSDK_PATH}/src/arch/macOS/*.hpp"
+    "${SLAMKITSDK_PATH}/src/arch/win32/*.cpp"
+    "${SLAMKITSDK_PATH}/src/arch/win32/*.hpp"
+    "${SLAMKITSDK_PATH}/src/arch/win32/*.h"
     "${SLAMKITSDK_PATH}/src/hal/*.cpp"
     "${SLAMKITSDK_PATH}/src/*.cpp"
+    "${SLAMKITSDK_PATH}/src/*.h"
+    "${SLAMKITSDK_PATH}/*.cpp"
+    "${SLAMKITSDK_PATH}/include/*.h"
   )
+  
+  set(ament_cmake_flake8 REQUIRED)
+  set(ament_cmake_copyright REQUIRED)
+  set(ament_cpplint REQUIRED)
+  set(ament_cmake_cpplint REQUIRED)
+  set(ament_cmake_uncrustify REQUIRED)
+  set(ament_cmake_cppcheck REQUIRED)
+
   set(AMENT_LINT_AUTO_EXCLUDE_DIRS "${SLAMKITSDK_PATH}")
   list(APPEND AMENT_LINT_AUTO_FILE_EXCLUDE
-    ${SLAMKITSDK_SRC}
+    ${EXCLUDE_FILES}
   )
   ament_lint_auto_find_test_dependencies()
 endif()
