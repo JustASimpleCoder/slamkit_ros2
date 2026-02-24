@@ -159,8 +159,8 @@ int main(int argc, char * argv[])
 
     std::shared_ptr<ISlamkitDriver> slamkit_drv = createSlamkitDriver();
 
-    const std::string & frame_id = main_node->get_parameter(FRAME_ID_LITERAL).as_string(); 
-    const std::string & channel_type = main_node->get_parameter(CHANNEL_TYPE_LITERAL).as_string(); 
+    const std::string frame_id = main_node->get_parameter(FRAME_ID_LITERAL).as_string(); 
+    const std::string channel_type = main_node->get_parameter(CHANNEL_TYPE_LITERAL).as_string(); 
 
     // usb communication
     if (channel_type == "usb")
