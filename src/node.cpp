@@ -67,17 +67,17 @@ void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string &
   }
 
   // according to datasheet,sensitivity scale factor is 16384, +-2g
-  double acc_x = imu_data.acc_x / SHIFT_15_BITS * 2 * 9.8;
-  double acc_y = imu_data.acc_y / SHIFT_15_BITS * 2 * 9.8;
-  double acc_z = imu_data.acc_z / SHIFT_15_BITS * 2 * 9.8;
+  double acc_x = imu_data.acc_x / SHIFT_15_BITS * 2.0 * STD_GRAVITY;
+  double acc_y = imu_data.acc_y / SHIFT_15_BITS * 2.0 * STD_GRAVITY;
+  double acc_z = imu_data.acc_z / SHIFT_15_BITS * 2.0 * STD_GRAVITY;
 
-  double gyro_x = imu_data.gyro_x / SHIFT_15_BITS * 2000 / 180 * MY_PI;
-  double gyro_y = imu_data.gyro_y / SHIFT_15_BITS * 2000 / 180 * MY_PI;
-  double gyro_z = imu_data.gyro_z / SHIFT_15_BITS * 2000 / 180 * MY_PI;
+  double gyro_x = imu_data.gyro_x / SHIFT_15_BITS * 2000.0 * DEGREE_TO_RAD;
+  double gyro_y = imu_data.gyro_y / SHIFT_15_BITS * 2000.0 * DEGREE_TO_RAD;
+  double gyro_z = imu_data.gyro_z / SHIFT_15_BITS * 2000.0 * DEGREE_TO_RAD;
 
-  double mag_x = imu_data.mag_x * 4900 / SHIFT_15_BITS / 1000000;
-  double mag_y = imu_data.mag_y * 4900 / SHIFT_15_BITS / 1000000;
-  double mag_z = imu_data.mag_z * 4900 / SHIFT_15_BITS / 1000000;
+  double mag_x = imu_data.mag_x * 4900.0 / SHIFT_15_BITS / 1000000.0;
+  double mag_y = imu_data.mag_y * 4900.0 / SHIFT_15_BITS / 1000000.0;
+  double mag_z = imu_data.mag_z * 4900.0 / SHIFT_15_BITS / 1000000.0;
 
   imu_msg_.header.stamp = this->get_clock()->now();
   imu_msg_.header.frame_id = frame_id;
@@ -188,7 +188,7 @@ int main(int argc, char * argv[])
   sl_slamkit_read_imu_processed_response_t processed_data;
 
   req.motion_hint_bitmap = SLAMKIT_REQUEST_MOTION_HINT_BITMAP_MOTION_BIT;
-  
+
   rclcpp::Rate rate(460);
   while (rclcpp::ok()) {
     op_result = slamkit_drv->getImuRawData(imu_data);

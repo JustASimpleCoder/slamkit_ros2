@@ -53,7 +53,7 @@ inline const char * LITERAL_VENDOR_ID = "usb_venderId_slamkit";
 inline const char * LITERAL_PRODUCT_ID = "usb_productId_slamkit";
 inline const char * LITERAL_INTERFACE_ID = "usb_interfaceId_slamkit";
 inline const char * LITERAL_TX_ENDPOINT = "usb_txEndpoint_slamkit";
-inline const char * LITERAL_RX_ENDPOINT= "usb_rxEndpoint_slamkit";
+inline const char * LITERAL_RX_ENDPOINT = "usb_rxEndpoint_slamkit";
 
 // Logger string literals
 inline const char * LOGGER_NODE_MAIN = "Slamkit_Main_Node";
@@ -75,5 +75,8 @@ inline constexpr double RAD_TO_DEGREE = 180.0 / MY_PI;
 // imu datasheet factors
 inline constexpr double SHIFT_15_BITS = 32768.0;
 inline constexpr double ACCEl_SENSITIVITY_SCALE_FACTOR = 16384.0;
+
+// standard gracity constant
+inline constexpr double STD_GRAVITY = 9.8;
 
 #endif  // SLAMKIT_ROS2__UTILITY_HPP_
