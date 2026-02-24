@@ -10,7 +10,7 @@ static inline constexpr double MY_PI  = 3.141592654;
 
 static inline constexpr double DEGREE_TO_RAD  = MY_PI / 180.0;
 
-static inline constexpr double RAD_TO_DEGREE  = 188.0 / MY_PI;
+static inline constexpr double RAD_TO_DEGREE  = 180.0 / MY_PI;
 
 static inline constexpr double SHIFT_15_BITS = 32768.00;
 static inline constexpr double ACCEl_SENSITIVITY_SCALE_FACTOR = 16384.00;

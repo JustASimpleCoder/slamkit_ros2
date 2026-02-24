@@ -62,7 +62,7 @@ class ClientNode : public rclcpp::Node
       ~ClientNode() = default;
     
     private:
-      void imu_callback(const geometry_msgs::msg::Vector3Stamped::ConstPtr & angle_rad);
+      void imu_callback(const geometry_msgs::msg::Vector3Stamped::ConstSharedPtr & angle_rad);
       void imu_timer_callback();
 
       rclcpp::TimerBase::SharedPtr degree_pub_timer_;

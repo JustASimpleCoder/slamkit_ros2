@@ -62,8 +62,6 @@ using namespace sl;
 static sl_u32 last_ts_ms = 0; 
 static sl_u32 processed_last_ts_ms = 0;
 
-constexpr double degree_to_Rad(const double x){(x * MY_PI) / 180.0;}
-
 class ImuPub : public rclcpp::Node
 {
     public:
