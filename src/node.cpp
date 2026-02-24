@@ -31,6 +31,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+ /*
+ *  
+ *  Modified by JustASimpleCoder february 23 2026
+ *
+ * 
+ */
 
 #include "slamkit_ros2/node.hpp"
 

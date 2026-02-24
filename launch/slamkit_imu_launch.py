@@ -1,4 +1,4 @@
-/*
+"""
  * Copyright (c) 2014, RoboPeak
  * All rights reserved.
  *
@@ -24,71 +24,59 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- */
-/*
+"""
+"""
  *  
  *  RPlidar ROS Node client test app
  *
  *  Copyright 2009 - 2014 RoboPeak Team
  *  http://www.robopeak.com
  * 
- */
-/*
+"""
+"""
  *  
  *  Modified by JustASimpleCoder february 23 2026
  *
  * 
- */
+ """
 
-#include "slamkit_ros2/client.hpp"
-
-ClientNode::ClientNode() : Node("degree_pub"),
-  angle_{}
-{
-  degree_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>("imu/angles_degree", 100);
-  // degree_pub_timer_ = this->create_wall_timer(
-  //   500ms, std::bind(&ClientNode::imu_timer_callback, this)
-  // );
-
-  degree_sub_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
-    "topic", 10, std::bind(&ClientNode::imu_callback, this, std::placeholders::_1)
-  );
-}
-
-void ClientNode::imu_timer_callback()
-{
-  degree_pub_->publish(angle_);
-}
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch_ros.actions import Node
 
 
-void ClientNode::imu_callback(const geometry_msgs::msg::Vector3Stamped::ConstSharedPtr & angle_rad)
-{
-    //ROS_INFO("I heard a slamkit %s[%u]:", imu->header.frame_id.c_str(), imu->header.seq);
-    //ROS_INFO("I heard a slamkit %s[%u]:", angle_rad->header.frame_id.c_str(), angle_rad->header.seq);
-
-    const double angle_degree_roll = angle_rad->vector.x * 180.0 / MY_PI;
-    const double angle_degree_pitch = angle_rad->vector.y * 180.0 / MY_PI;
-    const double angle_degree_yaw = angle_rad->vector.z * 180.0 / MY_PI;
-    
-    angle_.header.stamp = this->get_clock()->now();
-
-    angle_.header.frame_id = "angle_degree";
-    angle_.vector.x =  angle_degree_roll;
-    angle_.vector.y =  angle_degree_pitch;
-    angle_.vector.z =  angle_degree_yaw;
-    
-    degree_pub_->publish(angle_);
-}
-
-
-int main(int argc, char **argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<ClientNode>());
-  rclcpp::shutdown();
-  return 0;
-}
-
-
-
-
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='slamkit_ros2',
+            executable='slamkit_node',
+            name='slamkit_node',
+            output='screen',
+            parameters=[{
+                'channel_type':            'usb',
+                'frame_id':                'imu',
+                'usb_venderId_slamkit':    64719,
+                'usb_productId_slamkit':   61696,
+                'usb_interfaceId_slamkit': 3,
+                'usb_txEndpoint_slamkit':  5,
+                'usb_rxEndpoint_slamkit':  5,
+            }]
+        ),
+        Node(
+            package='imu_complementary_filter',
+            executable='complementary_filter_node',
+            name='complementary_filter_node',
+            output='screen',
+            parameters=[{
+                'publish_debug_topics': True,
+                'gain_acc':             0.01,
+            }]
+        ),
+        Node(
+            package='slamkit_ros2',
+            executable='slamkit_node_client',
+            name='slamkit_node_client',
+            output='screen',
+        ),
+    ])
