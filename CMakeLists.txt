@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.22.1)
 project(slamkit_ros2)
 
 if(NOT CMAKE_CXX_STANDARD)
@@ -12,9 +12,9 @@ set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}")
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(
-    -w  
-    -Wall 
-    -Wextra 
+    -w
+    -Wall
+    -Wextra
     -Wpedantic
   )
 endif()
@@ -25,7 +25,7 @@ if(MSVC)
   )
 endif()
 
-FILE(GLOB SLAMKITSDK_SRC 
+file(GLOB SLAMKITSDK_SRC
   "${SLAMKITSDK_PATH}/src/arch/linux/*.cpp"
   "${SLAMKITSDK_PATH}/src/hal/*.cpp"
   "${SLAMKITSDK_PATH}/src/*.cpp"
@@ -48,7 +48,6 @@ include_directories(
   ${SLAMKITSDK_ROS_PATH}
   ${PROJECT_SOURCE_DIR}/include
 )
-
 
 add_executable(slamkitNode src/node.cpp ${SLAMKITSDK_SRC})
 ament_target_dependencies(slamkitNode
@@ -77,17 +76,8 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-  
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  #set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  # set(ament_cmake_cpplint_FOUND TRUE)
-  # set(ament_cmake_cppcheck_FOUND REQUIRED)
 
-  FILE(GLOB_RECURSE EXCLUDE_FILES 
+  file(GLOB_RECURSE EXCLUDE_FILES
     "${SLAMKITSDK_PATH}/src/arch/linux/*.cpp"
     "${SLAMKITSDK_PATH}/src/arch/linux/*.hpp"
     "${SLAMKITSDK_PATH}/src/arch/linux/*.h"
@@ -102,16 +92,11 @@ if(BUILD_TESTING)
     "${SLAMKITSDK_PATH}/src/*.h"
     "${SLAMKITSDK_PATH}/*.cpp"
     "${SLAMKITSDK_PATH}/include/*.h"
+    "${SLAMKITSDK_PATH}LICENSE.txt"
+    "${SLAMKITSDK_PATH}README.md"
   )
-  
-  set(ament_cmake_flake8 REQUIRED)
-  set(ament_cmake_copyright REQUIRED)
-  set(ament_cpplint REQUIRED)
-  set(ament_cmake_cpplint REQUIRED)
-  set(ament_cmake_uncrustify REQUIRED)
-  set(ament_cmake_cppcheck REQUIRED)
 
-  set(AMENT_LINT_AUTO_EXCLUDE_DIRS "${SLAMKITSDK_PATH}")
+  set(AMENT_LINT_AUTO_EXCLUDE_DIRS "${SLAMKITSDK_ROS_PATH}")
   list(APPEND AMENT_LINT_AUTO_FILE_EXCLUDE
     ${EXCLUDE_FILES}
   )

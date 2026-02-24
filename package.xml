@@ -5,7 +5,7 @@
   <description>The slamkit ros2 package</description>
 
   <maintainer email="thejacobcohen@gmail.com">j</maintainer>
-  <license>BSD</license>
+  <license>BSD-2-Clause</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>rclcpp</build_depend>
@@ -17,7 +17,6 @@
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_cmake_flake8</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>
-  <test_depend>ament_cpplint</test_depend>
   <test_depend>ament_cmake_cpplint</test_depend>
   <test_depend>ament_cmake_uncrustify</test_depend>
   <test_depend>ament_cmake_cppcheck</test_depend>
