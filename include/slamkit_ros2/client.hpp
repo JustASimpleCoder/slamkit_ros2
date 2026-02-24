@@ -40,6 +40,9 @@
  * 
  */
 
+#ifndef SLAMKIT_ROS2__CLIENT_HPP_
+#define SLAMKIT_ROS2__CLIENT_HPP_
+
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -70,3 +73,5 @@ class ClientNode : public rclcpp::Node
       rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr degree_sub_;
       geometry_msgs::msg::Vector3Stamped angle_;
 };
+
+#endif  // SLAMKIT_ROS2__CLIENT_HPP_

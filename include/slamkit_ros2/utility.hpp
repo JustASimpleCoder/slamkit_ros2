@@ -37,6 +37,8 @@
  *
  * 
  */
+#ifndef SLAMKIT_ROS2__UTILITY_HPP_
+#define SLAMKIT_ROS2__UTILITY_HPP_
 
 static inline const char * CHANNEL_TYPE_LITERAL = "channel_type";
 static inline const char * FRAME_ID_LITERAL     = "frame_id";
@@ -54,3 +56,6 @@ static inline constexpr double RAD_TO_DEGREE  = 180.0 / MY_PI;
 
 static inline constexpr double SHIFT_15_BITS = 32768.00;
 static inline constexpr double ACCEl_SENSITIVITY_SCALE_FACTOR = 16384.00;
+
+
+#endif  // 

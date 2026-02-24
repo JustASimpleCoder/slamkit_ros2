@@ -39,7 +39,8 @@
  *
  * 
  */
-
+#ifndef SLAMKIT_ROS2__NODE_HPP_
+#define SLAMKIT_ROS2__NODE_HPP_
 
 #include <chrono>
 #include <functional>
@@ -98,3 +99,4 @@ class ImuPub : public rclcpp::Node
 
 };
 
+#endif  // SLAMKIT_ROS2__NODE_HPP_
