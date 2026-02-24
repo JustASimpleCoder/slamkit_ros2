@@ -79,4 +79,20 @@ def generate_launch_description():
             name='slamkitNodeClient',
             output='screen',
         ),
+
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name="static_transform_publisher",
+            parameters=[{
+                'x': 0,
+                'y': 0,
+                'z': 0.1,
+                'roll': 0,
+                'pitch': 0,
+                'yaw': 0,
+                'frame-id': 'base_link',
+                'child-frame-id': 'imu',
+            }]
+        ),
     ])
