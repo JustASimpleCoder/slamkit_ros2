@@ -40,22 +40,40 @@
 #ifndef SLAMKIT_ROS2__UTILITY_HPP_
 #define SLAMKIT_ROS2__UTILITY_HPP_
 
+// Node names
+static inline const char * CLIENT_NODE_NAME = "slamkit_node_client";
+static inline const char * IMU_PUB_NODE_NAME = "slamkit_node";
+
+// Topic names node
+static inline const char * TOPIC_IMU_RAW      = "imu/data_raw";
+static inline const char * TOPIC_IMU_FILTERED = "imu/processed_yaw";
+static inline const char * TOPIC_MAG_RAW      = "imu/mag";
+
+// Topic names client
+static inline const char * TOPIC_IMU_ANGLE   = "imu/angles_degree";
+static inline const char * TOPIC_IMU_RPY     = "imu/rpy/filtered";
+
+
+// parameter string literals
 static inline const char * CHANNEL_TYPE_LITERAL = "channel_type";
 static inline const char * FRAME_ID_LITERAL     = "frame_id";
-static inline const char * VENDOR_ID_LITERAL = "usb_venderId_slamkit";
+static inline const char * VENDOR_ID_LITERAL    = "usb_venderId_slamkit";
 static inline const char * PRODUCT_ID_LITERAL   = "usb_productId_slamkit";
 static inline const char * INTERFACE_ID_LITERAL = "usb_interfaceId_slamkit";
 static inline const char * TX_ENDPOINT_LITERAL  = "usb_txEndpoint_slamkit";
 static inline const char * RX_ENDPOINT_LITERAL  = "usb_rxEndpoint_slamkit";
 
+
+// math stuff
 static inline constexpr double MY_PI  = 3.141592654;
 
+// degree to rad conversions
 static inline constexpr double DEGREE_TO_RAD  = MY_PI / 180.0;
-
 static inline constexpr double RAD_TO_DEGREE  = 180.0 / MY_PI;
 
+// imu datasheet factors
 static inline constexpr double SHIFT_15_BITS = 32768.00;
 static inline constexpr double ACCEl_SENSITIVITY_SCALE_FACTOR = 16384.00;
 
 
-#endif  // 
+#endif  // SLAMKIT_ROS2__UTILITY_HPP_

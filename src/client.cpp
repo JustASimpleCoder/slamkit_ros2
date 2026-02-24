@@ -42,16 +42,16 @@
 
 #include "slamkit_ros2/client.hpp"
 
-ClientNode::ClientNode() : Node("degree_pub"),
+ClientNode::ClientNode() : Node(CLIENT_NODE_NAME),
   angle_{}
 {
-  degree_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>("imu/angles_degree", 100);
+  degree_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>(TOPIC_IMU_ANGLE, 100);
   // degree_pub_timer_ = this->create_wall_timer(
   //   500ms, std::bind(&ClientNode::imu_timer_callback, this)
   // );
 
   degree_sub_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
-    "topic", 10, std::bind(&ClientNode::imu_callback, this, std::placeholders::_1)
+    TOPIC_IMU_RPY, 10, std::bind(&ClientNode::imu_callback, this, std::placeholders::_1)
   );
 }
 
