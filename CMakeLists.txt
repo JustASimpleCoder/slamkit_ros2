@@ -12,9 +12,9 @@ set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}")
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(
     -w  
-    #-Wall 
-    #-Wextra 
-    #-Wpedantic
+    -Wall 
+    -Wextra 
+    -Wpedantic
   )
 endif()
 
@@ -36,8 +36,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(PkgConfig REQUIRED)
 
-
 pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
+
 include_directories(${LIBUSB_INCLUDE_DIRS})
 link_directories(${LIBUSB_LIBRARY_DIRS})
 
@@ -46,7 +46,6 @@ include_directories(
   ${SLAMKITSDK_PATH}/src
   ${PROJECT_SOURCE_DIR}/include
 )
-
 
 
 add_executable(slamkitNode src/node.cpp ${SLAMKITSDK_SRC})
@@ -84,6 +83,10 @@ if(BUILD_TESTING)
   # comment the line when this package is in a git repo and when
   # a copyright and license is added to all source files
   #set(ament_cmake_cpplint_FOUND TRUE)
+  set(AMENT_LINT_AUTO_EXCLUDE_DIRS "${SLAMKITSDK_PATH}")
+  list(APPEND AMENT_LINT_AUTO_FILE_EXCLUDE
+    ${SLAMKITSDK_SRC}
+  )
   ament_lint_auto_find_test_dependencies()
 endif()
 
