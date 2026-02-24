@@ -117,13 +117,14 @@ The complementary_filter_node in imu tools will start at the same time, and the 
 ros2 slamkit_ros2 slamkit_test.py
 ```
 
-The slamkit_usb_imu_filter.pywill start the following nodes:
+The slamkit_usb_imu_filter.py will start the following nodes:
 
 ```bash
     complementary_filter_node (imu_complementary_filter/complementary_filter_node)
     rviz (rviz/rviz)
     slamkitNode (slamkit_ros2/slamkitNode)
     slamkitNodeClient (slamkit_ros2/slamkitNodeClient)
+    static_transform_publisher (tf2_ros/static_transform_publisher)
 ```
 
 The rviz will use /imu/data which published from complementary_filter_node and display int window.
