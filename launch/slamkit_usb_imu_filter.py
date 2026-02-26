@@ -60,7 +60,7 @@ def generate_launch_description():
                 output="screen",
                 parameters=[
                     {
-                        "publish_debug_topics": True,
+                        "publish_debug_topics": False,
                         "gain_acc": 0.01,
                     }
                 ],
