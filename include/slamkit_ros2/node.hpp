@@ -45,8 +45,6 @@
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 
 #include "slamkit_ros2/utility.hpp"
-
-
 #include "slamkit/include/sl_slamkit.h"
 
 using sl::CHANNEL_TYPE_SERIALPORT;

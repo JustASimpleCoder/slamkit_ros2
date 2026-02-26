@@ -173,7 +173,7 @@ int main(int argc, char * argv[])
       RCLCPP_ERROR(rclcpp::get_logger(LOGGER_NODE_MAIN), "Error, cannot connect to slamkit.");
       return -1;
     }
-    RCLCPP_INFO(rclcpp::get_logger(LOGGER_NODE_MAIN), "slamkit deviece open ok");
+    RCLCPP_INFO(rclcpp::get_logger(LOGGER_NODE_MAIN), "slamkit device open ok");
   } else {
     RCLCPP_ERROR(
       rclcpp::get_logger(LOGGER_NODE_MAIN),
