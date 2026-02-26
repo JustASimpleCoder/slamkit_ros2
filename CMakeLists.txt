@@ -5,7 +5,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-set(SLAMKITSDK_PATH "./sdk/slamkit/")
+set(SLAMKITSDK_PATH "${CMAKE_CURRENT_SOURCE_DIR}/sdk/slamkit/")
 set(SLAMKITSDK_ROS_PATH "./sdk")
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++17 ${CMAKE_CXX_FLAGS}")
@@ -46,7 +46,7 @@ include_directories(
   ${SLAMKITSDK_PATH}/include
   ${SLAMKITSDK_PATH}/src
   ${SLAMKITSDK_ROS_PATH}
-  ${PROJECT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 add_executable(slamkitNode src/node.cpp ${SLAMKITSDK_SRC})
