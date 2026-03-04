@@ -58,6 +58,14 @@ ImuPub::ImuPub()
     {LITERAL_TX_ENDPOINT, 5},
     {LITERAL_RX_ENDPOINT, 5}
   });
+
+  // from datasheet: 
+  // https://bucket-download.slamtec.com/4893c54b7d4c4483c4a675b9f1fdf28d8acbdd38/Slamkit%20DatasheetV1.0_EN%2020240529.pdf
+  // orientation we dont trust, imu complementary filter we can trust
+  imu_msg_.angular_velocity_covariance = {6.84e-5, 0, 0, 0, 6.84e-5, 0, 0, 0, 6.84e-5};
+  imu_msg_.linear_acceleration_covariance = {5.1e-3, 0, 0, 0, 5.1e-3, 0, 0, 0, 5.1e-3};
+  imu_msg_.orientation_covariance = {-1, 0, 0, 0, 0, 0, 0, 0, 0};
+
 }
 
 void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string & frame_id)
