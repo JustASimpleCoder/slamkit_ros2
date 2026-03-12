@@ -38,10 +38,11 @@ ImuPub::ImuPub()
   imu_processed_msg_{},
   mag_msg_{}
 {
-  imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>(TOPIC_IMU_RAW, 100);
+  // should these be rclcpp::SensorDataQoS() ?
+  imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>(TOPIC_IMU_RAW, rclcpp::SensorDataQoS());
   imu_processed_pub_ = this->create_publisher<geometry_msgs::msg::Vector3Stamped>(
     TOPIC_IMU_FILTERED, 100);
-  mag_pub_ = this->create_publisher<sensor_msgs::msg::MagneticField>(TOPIC_MAG_RAW, 100);
+  mag_pub_ = this->create_publisher<sensor_msgs::msg::MagneticField>(TOPIC_MAG_RAW, rclcpp::SensorDataQoS());
 
 
   this->declare_parameters<std::string>(
