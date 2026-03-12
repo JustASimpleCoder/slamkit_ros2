@@ -62,10 +62,23 @@ ImuPub::ImuPub()
   // from datasheet: 
   // https://bucket-download.slamtec.com/4893c54b7d4c4483c4a675b9f1fdf28d8acbdd38/Slamkit%20DatasheetV1.0_EN%2020240529.pdf
   // orientation we dont trust, imu complementary filter we can trust
-  imu_msg_.angular_velocity_covariance = {6.84e-5, 0, 0, 0, 6.84e-5, 0, 0, 0, 6.84e-5};
+  // rate is publishing at 460 Hz
+  // Angular Vel -> gyroscope Noise Spectral density is 0.0015 (unit degree/sqrt(hz)) 
+  //    estimatated noise varaince : (0.015)*(pi/180)*(sqrt(460)) = 0.004614971322 (error in rad)
+  //
+  // linear accel -> lin acceleration Noise Spectral density is 230 (unit micro g/sqrt(hz)) 
+  //    estimatated variance  (230 * 10^(-6) )  *(sqrt(460)) = 0.004932950436 (error in g)
+  //
+  // Orientation covariance -> comes from complementary or other filter, set first entry -1 to 
+  //  indicates we do not know the actually variances 
+  //
+  // covariance is diagonal matrix with variances squared
+  //    - squared angular covaraince = (0.0046148971322)^2 = 3.15 * 10^(-5)
+  //    - linear acceleration covariance = (0.00493295036)^2 = 2.43 * 10^(-5)
+
+  imu_msg_.angular_velocity_covariance = {3.15e-5, 0, 0, 0, 3.15e-5, 0, 0, 0, 3.15e-5};
   imu_msg_.linear_acceleration_covariance = {5.1e-3, 0, 0, 0, 5.1e-3, 0, 0, 0, 5.1e-3};
   imu_msg_.orientation_covariance = {-1, 0, 0, 0, 0, 0, 0, 0, 0};
-
 }
 
 void ImuPub::imu_publish(const sl_imu_raw_data_t & imu_data, const std::string & frame_id)
